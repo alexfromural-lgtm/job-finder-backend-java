@@ -40,31 +40,31 @@ public class JobController {
     // POST /api/jobs  (RECRUITER)
     @PostMapping
     @PreAuthorize("hasRole('RECRUITER')")
-    public ResponseEntity<JobResponse> createJob(@Valid @RequestBody CreateJobRequest req,
+    public ResponseEntity<?> createJob(@Valid @RequestBody CreateJobRequest req,
                                                   HttpServletRequest request) {
         UUID userId = currentUserId();
-        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.createJob(userId, req));
+        return ResponseEntity.status(HttpStatus.CREATED).body(java.util.Map.of("job", jobService.createJob(userId, req)));
     }
 
     // GET /api/jobs/recruiter  (RECRUITER — must be before /{id})
     @GetMapping("/recruiter")
     @PreAuthorize("hasRole('RECRUITER')")
-    public ResponseEntity<List<JobResponse>> getJobsByRecruiter() {
-        return ResponseEntity.ok(jobService.getJobsByRecruiter(currentUserId()));
+    public ResponseEntity<?> getJobsByRecruiter() {
+        return ResponseEntity.ok(java.util.Map.of("jobs", jobService.getJobsByRecruiter(currentUserId())));
     }
 
     // GET /api/jobs/{id}  (public)
     @GetMapping("/{id}")
-    public ResponseEntity<JobResponse> getJobById(@PathVariable UUID id) {
-        return ResponseEntity.ok(jobService.getJobById(id));
+    public ResponseEntity<?> getJobById(@PathVariable UUID id) {
+        return ResponseEntity.ok(java.util.Map.of("job", jobService.getJobById(id)));
     }
 
     // PUT /api/jobs/{id}  (RECRUITER)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('RECRUITER')")
-    public ResponseEntity<JobResponse> updateJob(@PathVariable UUID id,
+    public ResponseEntity<?> updateJob(@PathVariable UUID id,
                                                   @RequestBody UpdateJobRequest req) {
-        return ResponseEntity.ok(jobService.updateJob(id, currentUserId(), req));
+        return ResponseEntity.ok(java.util.Map.of("job", jobService.updateJob(id, currentUserId(), req)));
     }
 
     // DELETE /api/jobs/{id}  (RECRUITER)

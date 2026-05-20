@@ -36,13 +36,13 @@ public class JobSeekerController {
     // GET /api/jobseeker/profile
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile() {
-        return ResponseEntity.ok(jobSeekerService.getJobSeekerProfile(currentUserId()));
+        return ResponseEntity.ok(java.util.Map.of("profile", jobSeekerService.getJobSeekerProfile(currentUserId())));
     }
 
     // PATCH /api/jobseeker/profile
     @PatchMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody UpdateJobSeekerProfileRequest req) {
-        return ResponseEntity.ok(jobSeekerService.updateJobSeekerProfile(currentUserId(), req));
+        return ResponseEntity.ok(java.util.Map.of("profile", jobSeekerService.updateJobSeekerProfile(currentUserId(), req)));
     }
 
     // POST /api/jobseeker/apply/{jobId}  → enqueue, return 202 + jobId
@@ -60,13 +60,13 @@ public class JobSeekerController {
 
         String queueJobId = queueService.enqueue(payload);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-            .body(Map.of("jobId", queueJobId, "message", "Application queued for processing"));
+            .body(Map.of("queueJobId", queueJobId, "status", "queued"));
     }
 
     // GET /api/jobseeker/applications
     @GetMapping("/applications")
-    public ResponseEntity<List<ApplicationResponse>> getApplications() {
-        return ResponseEntity.ok(jobSeekerService.getApplications(currentUserId()));
+    public ResponseEntity<?> getApplications() {
+        return ResponseEntity.ok(Map.of("applications", jobSeekerService.getApplications(currentUserId())));
     }
 
     // DELETE /api/jobseeker/applications/{id}
@@ -88,13 +88,13 @@ public class JobSeekerController {
 
         String queueJobId = queueService.enqueue(payload);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-            .body(Map.of("jobId", queueJobId, "message", "Save job queued for processing"));
+            .body(Map.of("queueJobId", queueJobId, "status", "queued"));
     }
 
     // GET /api/jobseeker/saved
     @GetMapping("/saved")
     public ResponseEntity<?> getSavedJobs() {
-        return ResponseEntity.ok(jobSeekerService.getSavedJobs(currentUserId()));
+        return ResponseEntity.ok(Map.of("savedJobs", jobSeekerService.getSavedJobs(currentUserId())));
     }
 
     // DELETE /api/jobseeker/saved/{jobId}

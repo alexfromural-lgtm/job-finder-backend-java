@@ -27,13 +27,13 @@ public class RecruiterController {
     // GET /api/recruiter/profile
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile() {
-        return ResponseEntity.ok(recruiterService.getRecruiterProfile(currentUserId()));
+        return ResponseEntity.ok(java.util.Map.of("profile", recruiterService.getRecruiterProfile(currentUserId())));
     }
 
     // PATCH /api/recruiter/profile
     @PatchMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody UpdateRecruiterProfileRequest req) {
-        return ResponseEntity.ok(recruiterService.updateRecruiterProfile(currentUserId(), req));
+        return ResponseEntity.ok(java.util.Map.of("profile", recruiterService.updateRecruiterProfile(currentUserId(), req)));
     }
 
     // GET /api/recruiter/jobs/{jobId}/applications
