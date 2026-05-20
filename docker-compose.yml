@@ -1,0 +1,88 @@
+
+services:
+  backend:
+    build: .
+    image: job-finder-backend-java
+    container_name: job-finder-backend
+    restart: unless-stopped
+    ports:
+      - '5002:5002'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://job-finder-db:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      SPRING_DATA_REDIS_URL: ${REDIS_URL}
+      APP_JWT_ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      APP_JWT_REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      APP_CORS_ORIGIN: ${CORS_ORIGIN}
+      APP_QUEUE_CONCURRENCY: ${QUEUE_CONCURRENCY}
+      SPRING_PROFILES_ACTIVE: prod
+    networks:
+      - job-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: job-finder-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - job-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: job-finder-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - job-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: job-finder-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - job-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  job-network:
+    driver: bridge
+
+volumes:
+  pgdata:
