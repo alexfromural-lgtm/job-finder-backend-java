@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.jobfinder</groupId>
-    <artifactId>job-finder-backend</artifactId>
+    <artifactId>job-finder-backend-java</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>job-finder-backend</name>
+    <name>job-finder-backend-java</name>
     <description>Job Finder REST API — Spring Boot migration from Node.js/Express</description>
 
     <properties>

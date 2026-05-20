@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/job-finder}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}}
     username: ${SPRING_DATASOURCE_USERNAME:job_finder_user}
     password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver

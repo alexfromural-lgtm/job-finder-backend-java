@@ -3,7 +3,7 @@ services:
   backend:
     build: .
     image: job-finder-backend-java
-    container_name: job-finder-backend
+    container_name: job-finder-backend-java
     restart: unless-stopped
     ports:
       - '5002:5002'
@@ -15,7 +15,7 @@ services:
     env_file:
       - .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://job-finder-db:5432/${DB_NAME}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
       SPRING_DATA_REDIS_URL: ${REDIS_URL}
@@ -23,7 +23,7 @@ services:
       APP_JWT_REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
       APP_CORS_ORIGIN: ${CORS_ORIGIN}
       APP_QUEUE_CONCURRENCY: ${QUEUE_CONCURRENCY}
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:5002/actuator/health | grep -q '\"status\":\"UP\"'"]
       interval: 10s
@@ -35,7 +35,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: job-finder-db
+    container_name: job-finder-db-java
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -58,7 +58,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: job-finder-pgadmin
+    container_name: job-finder-pgadmin-java
     restart: unless-stopped
     ports:
       - "5050:80"
@@ -74,7 +74,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: job-finder-redis
+    container_name: job-finder-redis-java
     restart: unless-stopped
     ports:
       - "6379:6379"

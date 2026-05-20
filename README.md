@@ -142,7 +142,7 @@ cp .env.sample .env
 ```env
 DB_NAME=job-finder
 DB_USER=job_finder_user
-DB_PASS=your_secure_password_123
+DB_PASS=secure_password_123
 ACCESS_TOKEN_SECRET=<generate a 64-char random string>
 REFRESH_TOKEN_SECRET=<generate a 64-char random string>
 REDIS_URL=redis://job-finder-redis:6379
@@ -165,10 +165,10 @@ docker-compose up --build
 ```
 
 This starts:
-- `job-finder-backend` on **port 5002** (Spring Boot, Java 21)
-- `job-finder-db` (PostgreSQL 16) on **port 5432**
-- `job-finder-redis` (Redis 7) on **port 6379**
-- `pgAdmin4` on **port 5050**
+- `job-finder-backend-java` on **port 5002** (Spring Boot, Java 21)
+- `job-finder-db-java` (PostgreSQL 16) on **port 5432**
+- `job-finder-redis-java` (Redis 7) on **port 6379**
+- `job-finder-pgadmin-java` on **port 5050**
 
 > **No manual migration step needed.** Flyway runs `V1__initial_schema.sql` and `V2__seed_data.sql` automatically on every startup. The schema is validated against JPA entities via `ddl-auto: validate`.
 
@@ -495,7 +495,7 @@ docker-compose up --build     # Flyway re-runs V1 + V2 from scratch
 ```bash
 # Connect from PowerShell
 docker exec -it job-finder-db psql -U job_finder_user -d job-finder -W
-# Password: your_secure_password_123
+# Password: secure_password_123
 
 # Inside the container
 psql -U job_finder_user -d job-finder
