@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import java.util.concurrent.Executor;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +46,10 @@ public class DbWriteWorker {
     @Value("${app.queue.concurrency:5}")
     private int concurrency;
 
+    @Autowired
+    @Qualifier("queueWorkerExecutor")
+    private Executor queueWorkerExecutor;
+
     /**
      * Starts N concurrent worker loops on the dedicated thread pool.
      * Called automatically after the Spring context is ready.
@@ -51,7 +57,7 @@ public class DbWriteWorker {
     @PostConstruct
     public void startWorkers() {
         for (int i = 0; i < concurrency; i++) {
-            runWorkerLoop();
+            queueWorkerExecutor.execute(this::runWorkerLoop);
         }
         log.info("[Worker] db-write-queue worker started (concurrency: {})", concurrency);
     }
@@ -60,7 +66,6 @@ public class DbWriteWorker {
      * Single polling loop — runs indefinitely on the queueWorkerExecutor thread pool.
      * Equivalent to Bull's dbWriteQueue.process(CONCURRENCY, handler).
      */
-    @Async("queueWorkerExecutor")
     public void runWorkerLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
