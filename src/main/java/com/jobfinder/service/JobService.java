@@ -144,10 +144,12 @@ public class JobService {
 
         return new PagedJobResponse(
             jobs,
-            result.getTotalElements(),
-            safePage,
-            safePageSize,
-            result.getTotalPages()
+            new PagedJobResponse.Meta(
+                result.getTotalElements(),
+                safePage,
+                safePageSize,
+                result.getTotalPages()
+            )
         );
     }
 

@@ -18,21 +18,35 @@ public interface JobRepository extends JpaRepository<Job, UUID> {
 
     /**
      * Paginated, filtered job search.
-     * Replaces Prisma's complex where clause with ILIKE for case-insensitive search.
-     *
-     * All filters are optional — null values are skipped via COALESCE/OR tricks.
+     * Uses a native query to avoid Hibernate 6's lower(bytea) type resolution
+     * bug that occurs when LOWER() is applied to TEXT columns in JPQL.
      */
-    @Query("""
-        SELECT j FROM Job j
-        WHERE j.isActive = true
-          AND (:category IS NULL OR j.category = :category)
-          AND (:location IS NULL OR LOWER(j.location) LIKE LOWER(CONCAT('%', :location, '%')))
-          AND (:search IS NULL OR
-               LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(j.description) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(j.requirements) LIKE LOWER(CONCAT('%', :search, '%')))
-        ORDER BY j.createdAt DESC
-        """)
+    @Query(
+        value = """
+            SELECT * FROM jobs j
+            WHERE j.is_active = true
+              AND (:category IS NULL OR j.category = :category)
+              AND (:location IS NULL OR LOWER(j.location::text) ILIKE LOWER('%' || :location || '%'))
+              AND (:search IS NULL OR (
+                   LOWER(j.title::text)        ILIKE LOWER('%' || :search || '%')
+                OR LOWER(j.description::text)  ILIKE LOWER('%' || :search || '%')
+                OR LOWER(j.requirements::text) ILIKE LOWER('%' || :search || '%')
+              ))
+            ORDER BY j.created_at DESC
+            """,
+        countQuery = """
+            SELECT COUNT(*) FROM jobs j
+            WHERE j.is_active = true
+              AND (:category IS NULL OR j.category = :category)
+              AND (:location IS NULL OR LOWER(j.location::text) ILIKE LOWER('%' || :location || '%'))
+              AND (:search IS NULL OR (
+                   LOWER(j.title::text)        ILIKE LOWER('%' || :search || '%')
+                OR LOWER(j.description::text)  ILIKE LOWER('%' || :search || '%')
+                OR LOWER(j.requirements::text) ILIKE LOWER('%' || :search || '%')
+              ))
+            """,
+        nativeQuery = true
+    )
     Page<Job> findAllWithFilters(
         @Param("category") String category,
         @Param("location") String location,
