@@ -33,3 +33,25 @@ app:
     origin: ${APP_CORS_ORIGIN:http://localhost:3000}
   queue:
     concurrency: ${APP_QUEUE_CONCURRENCY:5}
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Job Finder Backend
+    version: 1.0.0
+  java:
+    version: ${java.version}

@@ -11,7 +11,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -24,6 +24,12 @@ services:
       APP_CORS_ORIGIN: ${CORS_ORIGIN}
       APP_QUEUE_CONCURRENCY: ${QUEUE_CONCURRENCY}
       SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5002/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - job-network
 

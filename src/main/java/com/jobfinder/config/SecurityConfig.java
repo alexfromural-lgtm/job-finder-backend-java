@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,  "/api/jobs/{id}").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/queue/job/**").permitAll()
+                // Actuator — health & info are public (for Docker / load-balancer probes)
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 // Everything else requires authentication
                 .anyRequest().authenticated()
             )
