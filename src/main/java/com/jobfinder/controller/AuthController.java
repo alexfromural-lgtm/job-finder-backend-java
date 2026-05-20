@@ -101,9 +101,9 @@ public class AuthController {
 
     // GET /api/auth/me  (authenticated)
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> me(HttpServletRequest request) {
+    public ResponseEntity<Map<String, UserResponse>> me(HttpServletRequest request) {
         UUID userId = currentUserId(request);
-        return ResponseEntity.ok(authService.getCurrentUser(userId));
+        return ResponseEntity.ok(Map.of("user", authService.getCurrentUser(userId)));
     }
 
     // -------------------------------------------------------------------

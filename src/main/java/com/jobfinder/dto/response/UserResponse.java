@@ -1,5 +1,6 @@
 package com.jobfinder.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jobfinder.enums.Role;
 
 import java.time.Instant;
@@ -11,7 +12,7 @@ public record UserResponse(
     String name,
     String email,
     List<Role> roles,
-    boolean isActive,
+    @JsonProperty("isActive") boolean isActive,
     Instant createdAt,
     Instant updatedAt
 ) {}
