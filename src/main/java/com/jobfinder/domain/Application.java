@@ -1,7 +1,11 @@
 package com.jobfinder.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.jobfinder.enums.ApplicationStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +25,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Application {
 
     @Id
@@ -39,6 +44,7 @@ public class Application {
     private String coverLetter;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false)
     @Builder.Default
     private ApplicationStatus status = ApplicationStatus.submitted;

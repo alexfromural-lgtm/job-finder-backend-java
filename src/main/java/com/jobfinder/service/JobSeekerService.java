@@ -43,7 +43,7 @@ public class JobSeekerService {
     // -------------------------------------------------------------------
 
     public JobSeekerProfile getJobSeekerProfile(UUID userId) {
-        return jobSeekerProfileRepository.findByUserId(userId)
+        return jobSeekerProfileRepository.findByUser_Id(userId)
             .orElseThrow(() -> new ResourceNotFoundException("Job seeker profile not found"));
     }
 
@@ -136,7 +136,7 @@ public class JobSeekerService {
         Job job = jobRepository.findById(jobId)
             .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
-        savedJobRepository.findByJobIdAndJobSeekerId(jobId, seeker.getId())
+        savedJobRepository.findByJob_IdAndJobSeeker_Id(jobId, seeker.getId())
             .ifPresent(s -> { throw new ConflictException("Job already saved"); });
 
         SavedJob savedJob = SavedJob.builder()
@@ -153,7 +153,7 @@ public class JobSeekerService {
 
     public List<SavedJob> getSavedJobs(UUID userId) {
         JobSeekerProfile seeker = getJobSeekerProfile(userId);
-        return savedJobRepository.findByJobSeekerIdOrderBySavedAtDesc(seeker.getId());
+        return savedJobRepository.findByJobSeeker_IdOrderBySavedAtDesc(seeker.getId());
     }
 
     // -------------------------------------------------------------------
@@ -164,7 +164,7 @@ public class JobSeekerService {
     public void unsaveJob(UUID userId, UUID jobId) {
         JobSeekerProfile seeker = getJobSeekerProfile(userId);
 
-        SavedJob savedJob = savedJobRepository.findByJobIdAndJobSeekerId(jobId, seeker.getId())
+        SavedJob savedJob = savedJobRepository.findByJob_IdAndJobSeeker_Id(jobId, seeker.getId())
             .orElseThrow(() -> new ResourceNotFoundException("Saved job not found"));
 
         savedJobRepository.delete(savedJob);
@@ -179,15 +179,22 @@ public class JobSeekerService {
         return new ApplicationResponse(
             a.getId(),
             job.getId(),
-            job.getTitle(),
-            job.getLocation(),
-            job.getSalaryRange(),
-            job.getCategory(),
-            job.getRecruiter().getCompanyName(),
+            a.getJobSeeker().getId(),
             a.getCoverLetter(),
             a.getStatus(),
             a.getCreatedAt(),
-            a.getUpdatedAt()
+            a.getUpdatedAt(),
+            new ApplicationResponse.JobInfo(
+                job.getId(),
+                job.getTitle(),
+                job.getLocation(),
+                job.getSalaryRange(),
+                job.getCategory(),
+                job.isActive(),
+                new ApplicationResponse.RecruiterInfo(
+                    job.getRecruiter().getCompanyName()
+                )
+            )
         );
     }
 }

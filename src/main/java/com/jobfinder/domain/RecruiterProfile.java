@@ -1,5 +1,8 @@
 package com.jobfinder.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +20,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RecruiterProfile {
 
     @Id
@@ -25,6 +29,7 @@ public class RecruiterProfile {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JsonIgnoreProperties({"jobSeeker", "recruiter", "password", "createdAt", "updatedAt", "isActive", "hibernateLazyInitializer", "handler"})
     private User user;
 
     @Column(nullable = false)
@@ -36,4 +41,9 @@ public class RecruiterProfile {
     private String description;
 
     private String industry;
+
+    @JsonProperty("userId")
+    public UUID getUserId() {
+        return user != null ? user.getId() : null;
+    }
 }

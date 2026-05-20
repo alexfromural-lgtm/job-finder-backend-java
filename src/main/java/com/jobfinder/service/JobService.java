@@ -37,7 +37,7 @@ public class JobService {
 
     @Transactional
     public JobResponse createJob(UUID userId, CreateJobRequest req) {
-        RecruiterProfile recruiter = recruiterProfileRepository.findByUserId(userId)
+        RecruiterProfile recruiter = recruiterProfileRepository.findByUser_Id(userId)
             .orElseThrow(() -> new ResourceNotFoundException("Recruiter profile not found"));
 
         Job job = Job.builder()
@@ -69,7 +69,7 @@ public class JobService {
 
     @Transactional
     public JobResponse updateJob(UUID jobId, UUID userId, UpdateJobRequest req) {
-        RecruiterProfile recruiter = recruiterProfileRepository.findByUserId(userId)
+        RecruiterProfile recruiter = recruiterProfileRepository.findByUser_Id(userId)
             .orElseThrow(() -> new ResourceNotFoundException("Recruiter profile not found"));
 
         Job job = jobRepository.findById(jobId)
@@ -97,7 +97,7 @@ public class JobService {
 
     @Transactional
     public void deleteJob(UUID jobId, UUID userId) {
-        RecruiterProfile recruiter = recruiterProfileRepository.findByUserId(userId)
+        RecruiterProfile recruiter = recruiterProfileRepository.findByUser_Id(userId)
             .orElseThrow(() -> new ResourceNotFoundException("Recruiter profile not found"));
 
         Job job = jobRepository.findById(jobId)
@@ -115,7 +115,7 @@ public class JobService {
     // -------------------------------------------------------------------
 
     public List<JobResponse> getJobsByRecruiter(UUID userId) {
-        RecruiterProfile recruiter = recruiterProfileRepository.findByUserId(userId)
+        RecruiterProfile recruiter = recruiterProfileRepository.findByUser_Id(userId)
             .orElseThrow(() -> new ResourceNotFoundException("Recruiter profile not found"));
 
         return jobRepository.findByRecruiterIdOrderByCreatedAtDesc(recruiter.getId())

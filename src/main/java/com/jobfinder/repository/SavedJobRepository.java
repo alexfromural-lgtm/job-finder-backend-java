@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface SavedJobRepository extends JpaRepository<SavedJob, UUID> {
 
-    Optional<SavedJob> findByJobIdAndJobSeekerId(UUID jobId, UUID jobSeekerId);
+    Optional<SavedJob> findByJob_IdAndJobSeeker_Id(UUID jobId, UUID jobSeekerId);
 
-    List<SavedJob> findByJobSeekerIdOrderBySavedAtDesc(UUID jobSeekerId);
+    List<SavedJob> findByJobSeeker_IdOrderBySavedAtDesc(UUID jobSeekerId);
 }

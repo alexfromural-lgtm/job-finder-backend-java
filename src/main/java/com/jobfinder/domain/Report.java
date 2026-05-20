@@ -2,6 +2,8 @@ package com.jobfinder.domain;
 
 import com.jobfinder.enums.ReportStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,6 +45,7 @@ public class Report {
     private String reason;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false)
     @Builder.Default
     private ReportStatus status = ReportStatus.open;

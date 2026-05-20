@@ -112,7 +112,7 @@ public class AuthService {
         if (!user.getRoles().contains(Role.JOB_SEEKER)) {
             throw new ForbiddenException("Only Job Seekers can upgrade to Recruiter");
         }
-        if (recruiterProfileRepository.findByUserId(userId).isPresent()) {
+        if (recruiterProfileRepository.findByUser_Id(userId).isPresent()) {
             throw new ConflictException("User already has a recruiter profile");
         }
 

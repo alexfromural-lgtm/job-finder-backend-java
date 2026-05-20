@@ -1,5 +1,8 @@
 package com.jobfinder.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +29,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SavedJob {
 
     @Id
@@ -43,4 +47,14 @@ public class SavedJob {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant savedAt;
+
+    @JsonProperty("jobId")
+    public UUID getJobId() {
+        return job != null ? job.getId() : null;
+    }
+
+    @JsonProperty("jobSeekerId")
+    public UUID getJobSeekerId() {
+        return jobSeeker != null ? jobSeeker.getId() : null;
+    }
 }

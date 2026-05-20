@@ -37,7 +37,7 @@ public class RecruiterService {
     // -------------------------------------------------------------------
 
     public RecruiterProfile getRecruiterProfile(UUID userId) {
-        return recruiterProfileRepository.findByUserId(userId)
+        return recruiterProfileRepository.findByUser_Id(userId)
             .orElseThrow(() -> new ResourceNotFoundException("Recruiter profile not found"));
     }
 
