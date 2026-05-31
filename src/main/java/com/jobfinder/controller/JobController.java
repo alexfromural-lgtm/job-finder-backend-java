@@ -2,7 +2,6 @@ package com.jobfinder.controller;
 
 import com.jobfinder.dto.request.CreateJobRequest;
 import com.jobfinder.dto.request.UpdateJobRequest;
-import com.jobfinder.dto.response.JobResponse;
 import com.jobfinder.dto.response.PagedJobResponse;
 import com.jobfinder.service.JobService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 /**

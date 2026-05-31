@@ -2,8 +2,6 @@ package com.jobfinder.controller;
 
 import com.jobfinder.dto.request.ApplyToJobRequest;
 import com.jobfinder.dto.request.UpdateJobSeekerProfileRequest;
-import com.jobfinder.dto.response.ApplicationResponse;
-import com.jobfinder.dto.response.QueueJobStatusResponse;
 import com.jobfinder.queue.ApplyToJobPayload;
 import com.jobfinder.queue.DbWriteQueueService;
 import com.jobfinder.queue.SaveJobPayload;
@@ -14,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
