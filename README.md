@@ -187,6 +187,31 @@ mvn clean package -DskipTests
 java -jar target/job-finder-backend-1.0.0.jar
 ```
 
+### 5. Running with GraalVM Native Image (AOT Compilation)
+
+For production deployment or extremely fast container restart times, you can compile the Java application Ahead-of-Time (AOT) to a standalone native binary using **GraalVM Native Image**.
+
+* **Benefits**: Startup/restart time is reduced to milliseconds (typically ~0.08s), and runtime memory footprint is extremely low since no traditional JVM is loaded.
+* **Trade-off**: The build process is slow and memory-intensive (takes 3–8 minutes on the first run and requires significant RAM allocation in Docker).
+
+To build and run the native stack:
+
+1. **Ensure the shared network exists:**
+   ```bash
+   docker network create job-finder-network
+   ```
+
+2. **Start the native stack:**
+   ```bash
+   docker compose -f docker-compose.native.yml up --build
+   ```
+
+3. **Verify instant restarts:**
+   ```bash
+   docker compose -f docker-compose.native.yml restart backend
+   ```
+   Check the container logs to observe the startup time measured in milliseconds!
+
 ---
 
 ## 🧪 API Reference
