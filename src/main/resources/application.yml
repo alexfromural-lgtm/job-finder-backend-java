@@ -30,7 +30,7 @@ app:
     refresh-token-secret: ${APP_JWT_REFRESH_TOKEN_SECRET}
     refresh-token-expires-in: 7d
   cors:
-    origin: ${APP_CORS_ORIGIN:http://localhost:3000}
+    origin: ${APP_CORS_ORIGIN:http://localhost:3000,http://localhost:8080}
   queue:
     concurrency: ${APP_QUEUE_CONCURRENCY:5}
 
