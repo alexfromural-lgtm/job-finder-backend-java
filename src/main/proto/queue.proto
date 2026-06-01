@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package jobfinder;
+
+import "common.proto";
+
+option java_package         = "com.jobfinder.grpc.proto";
+option java_outer_classname = "QueueProto";
+option java_multiple_files  = true;
+
+// -----------------------------------------------------------------------
+// Queue service — mirrors GET /api/queue/job/{jobId}
+//
+// Public — no auth required (matches existing REST behaviour).
+// -----------------------------------------------------------------------
+
+service QueueService {
+  // Poll the status of an async queue job (apply / save-job operations).
+  rpc GetJobStatus (JobStatusRequest) returns (JobStatusResponse);
+}
+
+// -----------------------------------------------------------------------
+// Request / Response messages
+// -----------------------------------------------------------------------
+
+message JobStatusRequest {
+  string queue_job_id = 1;
+}
+
+message JobStatusResponse {
+  string id            = 1;
+  string type          = 2;
+  string status        = 3;   // waiting | active | completed | failed
+  int32  attempts_made = 4;
+  string created_at    = 5;   // ISO-8601
+  string result        = 6;   // JSON string or empty
+  string failed_reason = 7;
+}

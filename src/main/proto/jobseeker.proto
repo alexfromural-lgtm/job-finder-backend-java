@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package jobfinder;
+
+import "common.proto";
+
+option java_package         = "com.jobfinder.grpc.proto";
+option java_outer_classname = "JobSeekerProto";
+option java_multiple_files  = true;
+
+// -----------------------------------------------------------------------
+// JobSeeker service — mirrors /api/jobseeker (apply operation)
+//
+// Requires JOB_SEEKER role.
+// Requires "authorization: Bearer <access_token>" in call metadata.
+// -----------------------------------------------------------------------
+
+service JobSeekerService {
+  // Enqueue a job application (mirrors POST /api/jobseeker/apply/{jobId}).
+  // Returns a queue job ID the caller can poll with QueueService.GetJobStatus.
+  rpc ApplyToJob (ApplyToJobRequest) returns (QueuedOperationResponse);
+}
+
+// -----------------------------------------------------------------------
+// Request / Response messages
+// -----------------------------------------------------------------------
+
+message ApplyToJobRequest {
+  string job_id       = 1;   // UUID string
+  string cover_letter = 2;   // optional
+}
+
+message QueuedOperationResponse {
+  string queue_job_id = 1;
+  string status       = 2;   // "queued"
+}

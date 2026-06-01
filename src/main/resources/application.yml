@@ -1,6 +1,14 @@
 server:
   port: 5002
 
+# gRPC server — Netty, runs in parallel with Tomcat (REST stays on port 5002)
+grpc:
+  server:
+    port: 9090
+    # Use NONE for local/demo (enable TLS in production)
+    security:
+      enabled: false
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}}

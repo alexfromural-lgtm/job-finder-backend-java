@@ -6,7 +6,8 @@ services:
     container_name: job-finder-backend-java
     restart: unless-stopped
     ports:
-      - '5002:5002'
+      - '5002:5002'   # REST (Tomcat)
+      - '9090:9090'   # gRPC (Netty)
     depends_on:
       postgres:
         condition: service_healthy

@@ -3,6 +3,7 @@ package com.jobfinder.queue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobfinder.service.JobSeekerService;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,8 @@ public class DbWriteWorker {
     private final JobSeekerService              jobSeekerService;
     private final ObjectMapper                  objectMapper;
 
+    private volatile boolean active = true;
+
     @Value("${app.queue.concurrency:5}")
     private int concurrency;
 
@@ -63,11 +66,20 @@ public class DbWriteWorker {
     }
 
     /**
+     * Gracefully stops all worker loops when the Spring context shuts down.
+     */
+    @PreDestroy
+    public void stopWorkers() {
+        active = false;
+        log.info("[Worker] db-write-queue worker stopping...");
+    }
+
+    /**
      * Single polling loop — runs indefinitely on the queueWorkerExecutor thread pool.
      * Equivalent to Bull's dbWriteQueue.process(CONCURRENCY, handler).
      */
     public void runWorkerLoop() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (active && !Thread.currentThread().isInterrupted()) {
             try {
                 // Blocking right-pop: waits up to BRPOP_TIMEOUT seconds for a job
                 String jobId = redisTemplate.opsForList()
@@ -78,8 +90,8 @@ public class DbWriteWorker {
                 processWithRetry(jobId);
 
             } catch (Exception e) {
-                if (Thread.currentThread().isInterrupted()) {
-                    log.info("[Worker] Worker thread interrupted, shutting down");
+                if (!active || Thread.currentThread().isInterrupted()) {
+                    log.info("[Worker] Worker thread stopping/interrupted");
                     break;
                 }
                 log.error("[Worker] Unexpected error in worker loop", e);

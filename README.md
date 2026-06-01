@@ -426,6 +426,77 @@ The `DbWriteWorker` starts N concurrent threads (configured by `QUEUE_CONCURRENC
 
 ---
 
+## 🔌 gRPC Dual-Protocol Integration (Demo)
+
+This project implements a **hybrid dual-protocol architecture** for demo purposes:
+- **REST API** continues to run on port **`5002`** (via Tomcat) to support the React frontend seamlessly.
+- **gRPC Server** runs on port **`9090`** (via Netty) as a high-performance alternative protocol.
+
+### 🛠 gRPC Architecture details
+- **Proto definitions** are located in [src/main/proto/](file:///i:/Test/job-finder/job-finder-backend-java/src/main/proto/)
+- **Service implementations** reside in [src/main/java/com/jobfinder/grpc/](file:///i:/Test/job-finder/job-finder-backend-java/src/main/java/com/jobfinder/grpc/)
+- **Security**: Authentication uses standard gRPC metadata (headers). A global `JwtServerInterceptor` intercepts requests, validates the JWT, and binds authentication to the gRPC and Spring Security contexts.
+
+### 🧪 Testing with Postman (gRPC mode)
+
+Postman has first-class support for gRPC. Follow these steps to test the endpoints:
+
+#### 1. Setup Request
+1. Open Postman and click **New** -> **gRPC**.
+2. Enter the server URL: `localhost:9090`.
+3. Under **Service definition**, choose **Select a local file** and import the `.proto` files from `src/main/proto` (or use Server Reflection if configured).
+
+#### 2. Public RPC: Login
+* **Service**: `jobfinder.AuthService`
+* **Method**: `Login`
+* **Message Body**:
+  ```json
+  {
+    "email": "seeker@example.com",
+    "password": "seeker123"
+  }
+  ```
+* Click **Invoke**. You will receive a `LoginResponse` containing the `access_token` in the body (as cookies are not used in gRPC). Copy this token.
+
+#### 3. Authenticated RPC: Get Current User
+* **Service**: `jobfinder.AuthService`
+* **Method**: `GetCurrentUser`
+* **Metadata (Headers)**: Click the **Metadata** tab in Postman and add:
+  - **Key**: `authorization`
+  - **Value**: `Bearer <your_copied_access_token>`
+* Click **Invoke**. The server validates the token and returns the user profile.
+
+#### 4. Server-Side Streaming RPC: List Jobs
+* **Service**: `jobfinder.JobService`
+* **Method**: `ListJobs`
+* **Message Body**:
+  ```json
+  {
+    "page": 1,
+    "page_size": 10
+  }
+  ```
+* Click **Invoke**. The server will establish a stream and push job listings sequentially, which you can watch stream in real-time in the Postman response panel.
+
+#### 5. Async Enqueuing: Apply To Job & Poll Status
+1. **Apply**: Call `jobfinder.JobSeekerService.ApplyToJob` with your JWT metadata header and a job ID:
+   ```json
+   {
+     "job_id": "<job-uuid>",
+     "cover_letter": "I would love to apply!"
+   }
+   ```
+   This enqueues the operation and returns a `queue_job_id`.
+2. **Poll Status**: Call `jobfinder.QueueService.GetJobStatus` (no authentication required) with the `queue_job_id`:
+   ```json
+   {
+     "queue_job_id": "<queue-job-uuid>"
+   }
+   ```
+   You will see the job status transition from `waiting` -> `active` -> `completed` along with the persisted Application result once processed by the Redis queue worker!
+
+---
+
 ## 🛡 Global Error Handling
 
 `GlobalExceptionHandler` (`@ControllerAdvice`) is the single point of truth for all error responses:

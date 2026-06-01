@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package jobfinder;
+
+option java_package         = "com.jobfinder.grpc.proto";
+option java_outer_classname = "CommonProto";
+option java_multiple_files  = true;
+
+// -----------------------------------------------------------------------
+// Shared reusable types
+// -----------------------------------------------------------------------
+
+message Empty {}
+
+message UuidValue {
+  string value = 1;   // UUID as string
+}
+
+message Pagination {
+  int32 page      = 1;
+  int32 page_size = 2;
+}

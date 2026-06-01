@@ -197,7 +197,10 @@ public class AuthService {
     private AuthResponse issueTokens(User user, HttpServletResponse response) {
         String accessToken  = jwtService.generateAccessToken(user.getId(), user.getRoles());
         String refreshToken = jwtService.generateRefreshToken(user.getId());
-        jwtService.setTokenCookies(response, accessToken, refreshToken);
+        // response is null when called from gRPC (no cookie jar available)
+        if (response != null) {
+            jwtService.setTokenCookies(response, accessToken, refreshToken);
+        }
         return new AuthResponse(user.getId(), user.getRoles());
     }
 
