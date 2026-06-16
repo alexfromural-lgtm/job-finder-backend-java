@@ -1,97 +1,189 @@
+# Declares the start of the services configuration block
 services:
+  # Defines a service named 'backend'
   backend:
+    # Specifies the build configuration for the backend service image
     build:
+      # Sets the build context to the current directory
       context: .
+      # Specifies the custom Dockerfile to use for the build
       dockerfile: Dockerfile.native
+    # Names the generated image 'job-finder-backend-java-native'
     image: job-finder-backend-java-native
+    # Names the running container 'job-finder-backend-java-native'
     container_name: job-finder-backend-java-native
+    # Restarts the container unless it is explicitly stopped by the user
     restart: unless-stopped
+    # Maps ports from the host machine to the container
     ports:
+      # Maps host port 5002 to container port 5002 (REST API via Tomcat)
       - '5002:5002'   # REST (Tomcat)
+      # Maps host port 9090 to container port 9090 (gRPC service via Netty)
       - '9090:9090'   # gRPC (Netty)
+    # Lists dependencies that this service must wait for before starting
     depends_on:
+      # Depends on the 'postgres' database service
       postgres:
+        # Starts only when the postgres healthcheck passes (service is healthy)
         condition: service_healthy
+      # Depends on the 'redis' caching service
       redis:
+        # Starts only when the redis healthcheck passes (service is healthy)
         condition: service_healthy
+    # Loads environment variables from a .env file in the current directory
     env_file:
+      # Path to the environment variables file (.env)
       - .env
+    # Sets/overrides environment variables inside the container
     environment:
+      # Configures the JDBC connection URL for PostgreSQL database using host, port, and db name variables
       SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+      # Sets the database connection username
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      # Sets the database connection password
       SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      # Sets the Redis connection URL for caching and messaging
       SPRING_DATA_REDIS_URL: ${REDIS_URL}
+      # Sets the JWT access token signing secret
       APP_JWT_ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      # Sets the JWT refresh token signing secret
       APP_JWT_REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      # Configures allowed CORS origin for security
       APP_CORS_ORIGIN: ${CORS_ORIGIN}
+      # Sets the queue processing concurrency limit
       APP_QUEUE_CONCURRENCY: ${QUEUE_CONCURRENCY}
+      # Specifies active Spring profiles (e.g., prod, dev, native)
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    # Configures health checking to monitor the container's running state
     healthcheck:
+      # Test command to check if the application REST API responds with status UP
       test: ["CMD-SHELL", "curl -f http://localhost:5002/actuator/health | grep -q '\"status\":\"UP\"'"]
+      # Interval between consecutive health checks (10 seconds)
       interval: 10s
+      # Maximum time allowed to complete each health check request (5 seconds)
       timeout: 5s
+      # Number of consecutive failures allowed before considering the container unhealthy
       retries: 5
+      # Grace period to allow application startup before starting health checks (30 seconds)
       start_period: 30s
+    # Attaches the container to the specified networks
     networks:
+      # Connects backend container to the 'job-network' network
       - job-network
 
+  # Defines a service named 'postgres' for the database
   postgres:
+    # Pulls and uses the PostgreSQL version 16 Alpine Linux image
     image: postgres:16-alpine
+    # Names the running container 'job-finder-db-java-native'
     container_name: job-finder-db-java-native
+    # Restarts the database container unless it is explicitly stopped
     restart: unless-stopped
+    # Maps ports from the host machine to the container
     ports:
+      # Maps host port 5432 to container port 5432 (default PostgreSQL port)
       - "5432:5432"
+    # Loads environment variables from a local .env file
     env_file:
+      # Path to the environment variables file (.env)
       - .env
+    # Sets PostgreSQL environment variables for initialization
     environment:
+      # Sets the default database administrator username
       POSTGRES_USER: ${DB_USER}
+      # Sets the database administrator password
       POSTGRES_PASSWORD: ${DB_PASS}
+      # Creates a default database with this name upon initial startup
       POSTGRES_DB: ${DB_NAME}
+    # Mounts persistent storage volumes to the container
     volumes:
+      # Mounts the 'pgdata-native' volume to the default PostgreSQL data directory
       - pgdata-native:/var/lib/postgresql/data
+    # Attaches the container to the specified networks
     networks:
+      # Connects database container to the 'job-network' network
       - job-network
+    # Configures health checking to monitor if PostgreSQL is ready to accept connections
     healthcheck:
+      # Test command using pg_isready tool to check database availability
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      # Interval between database health checks (5 seconds)
       interval: 5s
+      # Time limit allowed for the pg_isready test to execute (5 seconds)
       timeout: 5s
+      # Number of retries before marking the database container as unhealthy
       retries: 10
+      # Grace period to allow postgres daemon to initialize before checks start (10 seconds)
       start_period: 10s
 
+  # Defines a service named 'pgadmin' for the database management UI
   pgadmin:
+    # Pulls and uses the official pgAdmin 4 Docker image
     image: dpage/pgadmin4
+    # Names the running container 'job-finder-pgadmin-java-native'
     container_name: job-finder-pgadmin-java-native
+    # Restarts the container unless it is explicitly stopped
     restart: unless-stopped
+    # Maps ports from the host machine to the container
     ports:
+      # Maps host port 5050 to pgAdmin container's HTTP port 80
       - "5050:80"
+    # Loads environment variables from a local .env file
     env_file:
+      # Path to the environment variables file (.env)
       - .env
+    # Sets environment variables for pgAdmin dashboard authentication
     environment:
+      # Sets the login email address for the pgAdmin UI
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      # Sets the login password for the pgAdmin UI
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    # Lists dependencies that pgAdmin must wait for before starting
     depends_on:
+      # Needs the database service 'postgres' to start first
       - postgres
+    # Attaches the container to the specified networks
     networks:
+      # Connects pgAdmin container to the 'job-network' network
       - job-network
 
+  # Defines a service named 'redis' for key-value caching and session management
   redis:
+    # Pulls and uses the Redis version 7 Alpine Linux image
     image: redis:7-alpine
+    # Names the running container 'job-finder-redis-java-native'
     container_name: job-finder-redis-java-native
+    # Restarts the Redis container unless it is explicitly stopped
     restart: unless-stopped
+    # Maps ports from the host machine to the container
     ports:
+      # Maps host port 6379 to container port 6379 (default Redis port)
       - "6379:6379"
+    # Attaches the container to the specified networks
     networks:
+      # Connects Redis container to the 'job-network' network
       - job-network
+    # Configures health checking to monitor Redis status
     healthcheck:
+      # Test command using redis-cli ping to ensure the Redis server is responsive
       test: ["CMD", "redis-cli", "ping"]
+      # Interval between Redis health checks (5 seconds)
       interval: 5s
+      # Time limit allowed for the redis-cli command to respond (5 seconds)
       timeout: 5s
+      # Number of retries before marking the Redis container as unhealthy
       retries: 10
 
+# Defines the network configuration section
 networks:
+  # Declares a logical network named 'job-network' referenced by services above
   job-network:
+    # Tells Docker Compose that the network is created outside of this compose file
     external: true
+    # Identifies the actual name of the pre-existing external network
     name: job-finder-network
 
+# Defines the persistent volume configuration section
 volumes:
+  # Declares a named volume 'pgdata-native' to persist PostgreSQL native database files
   pgdata-native:

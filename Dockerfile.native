@@ -1,51 +1,58 @@
 # ==============================================================
 # Stage 1: Build — GraalVM JDK 21 + Native Image Tools
 # ==============================================================
+# Use the official GraalVM native image build tool container for JDK 21
 FROM ghcr.io/graalvm/native-image-community:21 AS builder
 
+# Set the working directory inside the build container to /build
 WORKDIR /build
 
-# Copy maven wrapper and pom.xml first for layer caching
+# Copy the Maven wrapper settings and wrapper directory for project building
 COPY .mvn .mvn
+
+# Copy the Maven wrapper script and the project object model file to the root of working directory
 COPY mvnw pom.xml ./
 
-# Ensure the maven wrapper has execution permissions
+# Grant execute permissions to the Maven wrapper script
 RUN chmod +x mvnw
 
-# Resolve dependencies (offline mode to cache layers)
+# Resolve and download Maven dependencies in non-interactive batch mode and quiet mode to cache them
 RUN ./mvnw dependency:go-offline -B -q
 
-# Copy application source code
+# Copy the source code folder into the container's working directory
 COPY src ./src
 
-# Build the native binary using Spring Boot 3 AOT Compilation
-# This produces a native executable in target/job-finder-backend-java
+# Build the native executable utilizing Spring Boot 3 AOT (Ahead-of-Time) compilation and GraalVM native compiler, skipping tests
 RUN ./mvnw -Pnative native:compile -DskipTests -B
 
 # ==============================================================
 # Stage 2: Runtime — Minimal Debian Bookworm (No JVM needed)
 # ==============================================================
+# Use minimal Debian Bookworm image since native executable runs directly on the OS without a JVM
 FROM debian:bookworm-slim
 
+# Set the working directory inside the runtime container to /app
 WORKDIR /app
 
-# Install ca-certificates and curl (required for actuator healthcheck)
+# Update package lists, install CA certificates (for HTTPS/TLS) and curl (for healthchecks), then clean apt cache
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Create a non-root system user/group for security
+# Create a secure system group and user to execute the native binary without root privileges
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
-# Copy the compiled native executable from stage 1
+# Copy the compiled standalone native binary from the builder stage
 COPY --from=builder /build/target/job-finder-backend-java app
 
-# Ownership update for non-root execution
+# Change ownership of the native binary to the non-root system user and group
 RUN chown appuser:appgroup app
 
+# Switch execution context to the secure non-root user
 USER appuser
 
+# Document that the container exposes REST port 5002
 EXPOSE 5002
 
-# Run the standalone native binary directly
+# Set the entrypoint to run the compiled standalone native binary directly
 ENTRYPOINT ["./app"]
